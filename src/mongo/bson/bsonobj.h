@@ -25,10 +25,12 @@
 #include <vector>
 
 #include "mongo/bson/bsonelement.h"
+#include "mongo/base/data_view.h"
 #include "mongo/base/string_data.h"
 #include "mongo/bson/util/builder.h"
 #include "mongo/client/export_macros.h"
 #include "mongo/platform/atomic_word.h"
+#include "mongo/platform/cstdint.h"
 #include "mongo/util/bufreader.h"
 
 namespace mongo {
@@ -271,7 +273,7 @@ namespace mongo {
             return _objdata;
         }
         /** @return total size of the BSON object in bytes */
-        int objsize() const { return *(reinterpret_cast<const int*>(objdata())); }
+        int32_t objsize() const { return ConstDataView(objdata()).readLE<int32_t>(0); }
 
         /** performs a cursory check on the object's size only. */
         bool isValid() const;
