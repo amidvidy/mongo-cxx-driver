@@ -31,8 +31,8 @@ namespace mongo {
     struct BSONArray; // empty subclass of BSONObj useful for overloading
     struct BSONElementCmpWithoutField;
 
-    extern BSONObj maxKey;
-    extern BSONObj minKey;
+    BSONObj maxKey();
+    BSONObj minKey();
 
     /**
         the complete list of valid BSON types

@@ -31,8 +31,12 @@ namespace mongo {
         char maxkey;
         char name;
         char eoo;
-    } maxkeydata;
-    BSONObj maxKey((const char *) &maxkeydata);
+    } maxKeyData;
+
+    BSONObj maxKey() {
+        // TODO: probably undefined behavior. Need to have a more sane way of doing this.
+        return BSONObj(reinterpret_cast<const char*>(&maxKeyData));
+    }
 
     struct MinKeyData {
         MinKeyData() {
@@ -45,8 +49,11 @@ namespace mongo {
         char minkey;
         char name;
         char eoo;
-    } minkeydata;
-    BSONObj minKey((const char *) &minkeydata);
+    } minKeydata;
+
+    BSONObj minKey() {
+        return BSONObj(reinterpret_cast<const char*>(&minKeydata));
+    }
 
     /*
         struct JSObj0 {
