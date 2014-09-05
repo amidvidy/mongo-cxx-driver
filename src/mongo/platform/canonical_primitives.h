@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include <boost/static_assert.hpp>
 #include <limits>
 
 #include "mongo/platform/cstdint.h"
