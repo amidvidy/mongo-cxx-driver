@@ -20,6 +20,7 @@
 #include <cstring>
 #include <boost/static_assert.hpp>
 
+#include "mongo/platform/canonical_primitives.h"
 #include "mongo/platform/cstdint.h"
 
 #pragma push_macro("MONGO_UINT16_SWAB")
@@ -422,24 +423,32 @@ namespace endian {
         }
     };
 
+    namespace {
+        // Workaround until we can use C++11 'using' w/ templates
+        template<typename T>
+        struct CanonicalConverter {
+            typedef ByteOrderConverter<typename canonical<T>::type> type;
+        };
+    }
+
     template<typename T>
     inline T nativeToBig(T t) {
-        return ByteOrderConverter<T>::nativeToBig(t);
+        return CanonicalConverter<T>::type::nativeToBig(t);
     }
 
     template<typename T>
     inline T bigToNative(T t) {
-        return ByteOrderConverter<T>::bigToNative(t);
+        return CanonicalConverter<T>::type::bigToNative(t);
     }
 
     template<typename T>
     inline T nativeToLittle(T t) {
-        return ByteOrderConverter<T>::nativeToLittle(t);
+        return CanonicalConverter<T>::type::nativeToLittle(t);
     }
 
     template<typename T>
     inline T littleToNative(T t) {
-        return ByteOrderConverter<T>::littleToNative(t);
+        return CanonicalConverter<T>::type::littleToNative(t);
     }
 
 } // namespace mongo

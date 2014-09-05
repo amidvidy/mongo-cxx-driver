@@ -19,7 +19,6 @@
 
 #include <cfloat>
 #include <iostream>
-#include <limits>
 #include <sstream>
 #include <stdio.h>
 #include <string>
@@ -40,33 +39,6 @@ namespace mongo {
     struct PackedDouble {
         double d;
     } PACKED_DECL;
-
-// hacks to deal with our flagrant disuse of stdint types...
-namespace {
-    template<std::size_t sz, bool is_signed, bool is_integer>
-    struct canonicalize {};
-
-    template<typename T>
-    struct canonical {
-        typedef typename canonicalize<sizeof(T),
-                                      std::numeric_limits<T>::is_signed,
-                                      std::numeric_limits<T>::is_integer
-                         >::type
-                type;
-        };
-        
-    template<> struct canonicalize<8, true, true>  { typedef int64_t  type; };
-    template<> struct canonicalize<4, true, true>  { typedef int32_t  type; };
-    template<> struct canonicalize<2, true, true>  { typedef int16_t  type; };
-    template<> struct canonicalize<1, true, true>  { typedef int8_t   type; };
-    template<> struct canonicalize<8, false, true> { typedef uint64_t type; };
-    template<> struct canonicalize<4, false, true> { typedef uint32_t type; };
-    template<> struct canonicalize<2, false, true> { typedef uint16_t type; };
-    template<> struct canonicalize<1, false, true> { typedef uint8_t  type; };
-    template<> struct canonicalize<4, true, false> { typedef float    type; };
-    template<> struct canonicalize<8, true, false> { typedef double   type; };
-}
-
 
     /* Note the limit here is rather arbitrary and is simply a standard. generally the code works
        with any object that fits in ram.
@@ -175,16 +147,9 @@ namespace {
         /* assume ownership of the buffer - you must then free() it */
         void decouple() { data = 0; }
 
-        template<typename T> 
-        inline void appendAs(T val) { 
-            DataView(grow(sizeof(T))).writeLE<T>(val);
-        }
-
-        // the main issue is bool, the size of which is implementation
-        // defined
         template<typename T>
         inline void append(T val) {
-            appendAs<typename canonical<T>::type>(static_cast<typename canonical<T>::type>(val));
+            DataView(grow(sizeof(T))).writeLE<T>(val);
         }
 
         void appendUChar(unsigned char j) {
