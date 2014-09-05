@@ -19,12 +19,15 @@
 
 #include <cfloat>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <stdio.h>
 #include <string>
 #include <string.h>
 
 #include "mongo/bson/inline_decls.h"
+#include "mongo/platform/cstdint.h"
+#include "mongo/base/data_view.h"
 #include "mongo/base/string_data.h"
 #include "mongo/util/assert_util.h"
 
@@ -37,6 +40,32 @@ namespace mongo {
     struct PackedDouble {
         double d;
     } PACKED_DECL;
+
+// hacks to deal with our flagrant disuse of stdint types...
+namespace {
+    template<std::size_t sz, bool is_signed, bool is_integer>
+    struct canonicalize {};
+
+    template<typename T>
+    struct canonical {
+        typedef typename canonicalize<sizeof(T),
+                                      std::numeric_limits<T>::is_signed,
+                                      std::numeric_limits<T>::is_integer
+                         >::type
+                type;
+        };
+        
+    template<> struct canonicalize<8, true, true>  { typedef int64_t  type; };
+    template<> struct canonicalize<4, true, true>  { typedef int32_t  type; };
+    template<> struct canonicalize<2, true, true>  { typedef int16_t  type; };
+    template<> struct canonicalize<1, true, true>  { typedef int8_t   type; };
+    template<> struct canonicalize<8, false, true> { typedef uint64_t type; };
+    template<> struct canonicalize<4, false, true> { typedef uint32_t type; };
+    template<> struct canonicalize<2, false, true> { typedef uint16_t type; };
+    template<> struct canonicalize<1, false, true> { typedef uint8_t  type; };
+    template<> struct canonicalize<4, true, false> { typedef float    type; };
+    template<> struct canonicalize<8, true, false> { typedef double   type; };
+}
 
 
     /* Note the limit here is rather arbitrary and is simply a standard. generally the code works
@@ -146,35 +175,47 @@ namespace mongo {
         /* assume ownership of the buffer - you must then free() it */
         void decouple() { data = 0; }
 
+        template<typename T> 
+        inline void appendAs(T val) { 
+            DataView(grow(sizeof(T))).writeLE<T>(val);
+        }
+
+        // the main issue is bool, the size of which is implementation
+        // defined
+        template<typename T>
+        inline void append(T val) {
+            appendAs<typename canonical<T>::type>(static_cast<typename canonical<T>::type>(val));
+        }
+
         void appendUChar(unsigned char j) {
-            *((unsigned char*)grow(sizeof(unsigned char))) = j;
+            append<unsigned char>(j);
         }
         void appendChar(char j) {
-            *((char*)grow(sizeof(char))) = j;
+            append<char>(j);
         }
         void appendNum(char j) {
-            *((char*)grow(sizeof(char))) = j;
+            append<char>(j);
         }
         void appendNum(short j) {
-            *((short*)grow(sizeof(short))) = j;
+            append<short>(j);
         }
         void appendNum(int j) {
-            *((int*)grow(sizeof(int))) = j;
+            append<int>(j);
         }
         void appendNum(unsigned j) {
-            *((unsigned*)grow(sizeof(unsigned))) = j;
+            append<unsigned>(j);
         }
         void appendNum(bool j) {
-            *((bool*)grow(sizeof(bool))) = j;
+            append<bool>(j);
         }
         void appendNum(double j) {
-            (reinterpret_cast< PackedDouble* >(grow(sizeof(double))))->d = j;
+            append<double>(j);
         }
         void appendNum(long long j) {
-            *((long long*)grow(sizeof(long long))) = j;
+            append<long long>(j);
         }
         void appendNum(unsigned long long j) {
-            *((unsigned long long*)grow(sizeof(unsigned long long))) = j;
+            append<unsigned long long>(j);
         }
 
         void appendBuf(const void *src, size_t len) {
