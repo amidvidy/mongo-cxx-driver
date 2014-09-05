@@ -1547,10 +1547,11 @@ def doConfigure(myenv):
         if not conf.CheckLib("execinfo"):
             Exit(1)
 
-    conf.env['MONGO_HAVE_TIMEGM'] = conf.CheckDeclaration(
-        'timegm', includes="#include <time.h>", language='C')
-    if conf.env['MONGO_HAVE_TIMEGM']:
-        conf.env.Append(CPPDEFINES=['MONGO_HAVE_TIMEGM'])
+    if not windows: # we use boost for time handling on windows
+        conf.env['MONGO_HAVE_TIMEGM'] = conf.CheckDeclaration(
+            'timegm', includes="#include <time.h>", language='C')
+        if conf.env['MONGO_HAVE_TIMEGM']:
+            conf.env.Append(CPPDEFINES=['MONGO_HAVE_TIMEGM'])
 
     return conf.Finish()
 
