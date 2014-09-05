@@ -25,17 +25,26 @@ namespace mongo {
 namespace {
     template<std::size_t sz, bool is_signed, bool is_integer>
     struct canonicalize {};
+
+#define CANONICAL_PRIMITIVE(TYPE) \
+    template<> struct canonicalize<sizeof(TYPE), \
+                                   std::numeric_limits<TYPE>::is_signed, \
+                                   std::numeric_limits<TYPE>::is_integer \
+                      > { typedef TYPE type; };
     
-    template<> struct canonicalize<8, true,  true>  { typedef int64_t  type; };
-    template<> struct canonicalize<4, true,  true>  { typedef int32_t  type; };
-    template<> struct canonicalize<2, true,  true>  { typedef int16_t  type; };
-    template<> struct canonicalize<1, true,  true>  { typedef int8_t   type; };
-    template<> struct canonicalize<8, false, true>  { typedef uint64_t type; };
-    template<> struct canonicalize<4, false, true>  { typedef uint32_t type; };
-    template<> struct canonicalize<2, false, true>  { typedef uint16_t type; };
-    template<> struct canonicalize<1, false, true>  { typedef uint8_t  type; };
-    template<> struct canonicalize<4, true,  false> { typedef float    type; };
-    template<> struct canonicalize<8, true,  false> { typedef double   type; };
+    CANONICAL_PRIMITIVE(int64_t);
+    CANONICAL_PRIMITIVE(int32_t);
+    CANONICAL_PRIMITIVE(int16_t);
+    CANONICAL_PRIMITIVE(int8_t);
+    CANONICAL_PRIMITIVE(uint64_t);
+    CANONICAL_PRIMITIVE(uint32_t);
+    CANONICAL_PRIMITIVE(uint16_t);
+    CANONICAL_PRIMITIVE(uint8_t);
+    CANONICAL_PRIMITIVE(double);
+    CANONICAL_PRIMITIVE(float);
+
+#undef CANONICAL_PRIMITIVE
+
 }
 
 template<typename T>
