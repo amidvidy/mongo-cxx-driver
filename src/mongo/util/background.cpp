@@ -211,6 +211,7 @@ namespace mongo {
     }
 
     bool BackgroundJob::wait( unsigned msTimeOut ) {
+        std::cout << "BackgroundJob::wait" << std::endl;
         verify( !_selfDelete ); // you cannot call wait on a self-deleting job
         boost::unique_lock<boost::mutex> l( _status->mutex );
         while ( _status->state != Done ) {
@@ -269,6 +270,7 @@ namespace mongo {
     }
 
     Status PeriodicTask::stopRunningPeriodicTasks( unsigned gracePeriodMillis ) {
+        std::cout << "stopRunningPeriodicTasks" << std::endl;
         ConditionalScopedLock lock( runnerMutex );
 
         Status status = Status::OK();

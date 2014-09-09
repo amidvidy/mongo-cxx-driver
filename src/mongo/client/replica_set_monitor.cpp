@@ -451,6 +451,7 @@ namespace {
     }
 
     void ReplicaSetMonitor::cleanup() {
+        std::cout << "RSM::cleanup" << std::endl;
         // Call cancel first, in case the RSMW was never started.
         replicaSetMonitorWatcher.cancel();
         replicaSetMonitorWatcher.stop();
