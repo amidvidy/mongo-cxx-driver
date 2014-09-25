@@ -416,7 +416,7 @@ namespace {
         // Kill all pooled ReplicaSetConnections for this set. They will not function correctly
         // after we kill the ReplicaSetMonitor.
         // TODO we may only need to do this if clearSeedCache is true.
-        pool.removeHost(name);
+        //pool.removeHost(name);
     }
 
     void ReplicaSetMonitor::setConfigChangeHook(ConfigChangeHook hook) {

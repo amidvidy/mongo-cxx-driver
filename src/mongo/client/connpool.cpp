@@ -92,17 +92,17 @@ namespace mongo {
     DBClientBase * PoolForHost::get( DBConnectionPool * pool , double socketTimeout ) {
 
         time_t now = time(0);
-        
+
         while ( ! _pool.empty() ) {
             StoredConnection sc = _pool.top();
             _pool.pop();
-            
+
             if ( ! sc.ok( now ) )  {
                 pool->onDestroy( sc.conn );
                 delete sc.conn;
                 continue;
             }
-            
+
             verify( sc.conn->getSoTimeout() == socketTimeout );
 
             return sc.conn;
@@ -147,7 +147,7 @@ namespace mongo {
         while ( ! _pool.empty() ) {
             StoredConnection c = _pool.top();
             _pool.pop();
-            
+
             if ( c.ok( now ) )
                 all.push_back( c );
             else
@@ -184,13 +184,13 @@ namespace mongo {
 
     // ------ DBConnectionPool ------
 
-    DBConnectionPool pool;
+    //DBConnectionPool pool;
 
     const int PoolForHost::kPoolSizeUnlimited(-1);
 
-    DBConnectionPool::DBConnectionPool() 
+    DBConnectionPool::DBConnectionPool()
         : _mutex(),
-          _name( "dbconnectionpool" ) , 
+          _name( "dbconnectionpool" ) ,
           _maxPoolSize(PoolForHost::kPoolSizeUnlimited) ,
           _hooks( new list<DBConnectionHook*>() ) {
     }
@@ -211,7 +211,7 @@ namespace mongo {
             p.initializeHostName(host);
             p.createdOne( conn );
         }
-        
+
         try {
             onCreate( conn );
             onHandedOut( conn );
@@ -355,7 +355,7 @@ namespace mongo {
 
 
         map<ConnectionString::ConnectionType,long long> createdByType;
-        
+
         BSONObjBuilder bb( b.subobjStart( "hosts" ) );
         {
             boost::lock_guard<boost::mutex> lk( _mutex );
@@ -378,10 +378,10 @@ namespace mongo {
             }
         }
         bb.done();
-        
+
         // Always report all replica sets being tracked
         set<string> replicaSets = ReplicaSetMonitor::getAllTrackedSets();
-        
+
         BSONObjBuilder setBuilder( b.subobjStart( "replicaSets" ) );
         for ( set<string>::iterator i=replicaSets.begin(); i!=replicaSets.end(); ++i ) {
             string rs = *i;
@@ -390,7 +390,7 @@ namespace mongo {
                 warning() << "no monitor for set: " << rs << endl;
                 continue;
             }
-            
+
             BSONObjBuilder temp( setBuilder.subobjStart( rs ) );
             m->appendInfo( temp );
             temp.done();
@@ -412,7 +412,7 @@ namespace mongo {
     bool DBConnectionPool::serverNameCompare::operator()( const string& a , const string& b ) const{
         const char* ap = a.c_str();
         const char* bp = b.c_str();
-       
+
         while (true){
             if (*ap == '\0' || *ap == '/'){
                 if (*bp == '\0' || *bp == '/')
@@ -423,7 +423,7 @@ namespace mongo {
 
             if (*bp == '\0' || *bp == '/')
                 return false; // b is shorter
-            
+
             if ( *ap < *bp)
                 return true;
             else if (*ap > *bp)
@@ -434,11 +434,11 @@ namespace mongo {
         }
         verify(false);
     }
-    
+
     bool DBConnectionPool::poolKeyCompare::operator()( const PoolKey& a , const PoolKey& b ) const {
         if (DBConnectionPool::serverNameCompare()( a.ident , b.ident ))
             return true;
-        
+
         if (DBConnectionPool::serverNameCompare()( b.ident , a.ident ))
             return false;
 
@@ -465,9 +465,9 @@ namespace mongo {
         return true;
     }
 
-    void DBConnectionPool::taskDoWork() { 
+    void DBConnectionPool::taskDoWork() {
         vector<DBClientBase*> toDelete;
-        
+
         {
             // we need to get the connections inside the lock
             // but we can actually delete them outside
@@ -519,7 +519,7 @@ namespace mongo {
     }
 
     void ScopedDbConnection::clearPool() {
-        pool.clear();
+        //pool.clear();
     }
 
     AtomicInt32 AScopedConnection::_numConnections;

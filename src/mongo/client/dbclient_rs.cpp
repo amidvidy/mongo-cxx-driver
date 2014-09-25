@@ -636,7 +636,7 @@ namespace {
         verify(0);
     }
 
-    void DBClientReplicaSet::isntMaster() { 
+    void DBClientReplicaSet::isntMaster() {
         log() << "got not master for: " << _masterHost << endl;
         // Can't use _getMonitor because that will create a new monitor from the cached seed if
         // the monitor doesn't exist.
@@ -721,12 +721,17 @@ namespace {
         // Needs to perform a dynamic_cast because we need to set the replSet
         // callback. We should eventually not need this after we remove the
         // callback.
-        DBClientConnection* newConn = dynamic_cast<DBClientConnection*>(
-                pool.get(_lastSlaveOkHost.toString(), _so_timeout));
+        //DBClientConnection* newConn = dynamic_cast<DBClientConnection*>(
+        //pool.get(_lastSlaveOkHost.toString(), _so_timeout));
+
+        std::string errmsg;
+        DBClientConnection* newConn = dynamic_cast<DBClientConnection*>(ConnectionString(_lastSlaveOkHost).connect(errmsg));
 
         // Assert here instead of returning NULL since the contract of this method is such
         // that returning NULL means none of the nodes were good, which is not the case here.
-        uassert(16532, str::stream() << "Failed to connect to " << _lastSlaveOkHost.toString(),
+        uassert(16532,
+                str::stream() << "Failed to connect to " << _lastSlaveOkHost.toString()
+                              << ": " << errmsg,
                 newConn != NULL);
 
         _lastSlaveOkConn.reset(newConn);
@@ -976,13 +981,13 @@ namespace {
                 return false;
             }
         }
-        
+
         LOG( 3 ) << "dbclient_rs call to primary node in " << _getMonitor()->getName() << endl;
 
         DBClientConnection* m = checkMaster();
         if ( actualServer )
             *actualServer = m->getServerAddress();
-        
+
         if ( ! m->call( toSend , response , assertOk ) )
             return false;
 
@@ -1047,7 +1052,8 @@ namespace {
             }
 
             // If the connection was bad, the pool will clean it up.
-            pool.release(_lastSlaveOkHost.toString(), _lastSlaveOkConn.release());
+            _lastSlaveOkConn.reset();
+            //pool.release(_lastSlaveOkHost.toString(), _lastSlaveOkConn.release());
         }
 
         _lastSlaveOkHost = HostAndPort();

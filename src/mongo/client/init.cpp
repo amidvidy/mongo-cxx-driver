@@ -89,8 +89,8 @@ namespace client {
                 return result;
 
             // Setup default pool parameters
-            mongo::pool.setName("connection pool");
-            mongo::pool.setMaxPoolSize(50);
+            //mongo::pool.setName("connection pool");
+            //mongo::pool.setMaxPoolSize(50);
 
             PeriodicTask::startRunningPeriodicTasks();
 

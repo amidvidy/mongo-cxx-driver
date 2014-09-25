@@ -338,11 +338,11 @@ namespace mongo {
             DummyServerFixture() {
                 _server = new TCPServer(TARGET_PORT);
                 _thread = new boost::thread(boost::ref(*_server));
-                _maxPoolSizePerHost = mongo::pool.getMaxPoolSize();
+                //_maxPoolSizePerHost = mongo::pool.getMaxPoolSize();
             }
 
             ~DummyServerFixture() {
-                mongo::pool.setMaxPoolSize(_maxPoolSizePerHost);
+                //mongo::pool.setMaxPoolSize(_maxPoolSizePerHost);
                 mongo::ScopedDbConnection::clearPool();
 
                 _server->stop();
@@ -407,7 +407,7 @@ namespace mongo {
         private:
             TCPServer* _server;
             boost::thread* _thread;
-            uint32_t _maxPoolSizePerHost;
+        //uint32_t _maxPoolSizePerHost;
     };
 
     TEST_F(DummyServerFixture, BasicScopedDbConnection) {
@@ -478,7 +478,7 @@ namespace mongo {
     }
 
     TEST_F(DummyServerFixture, InvalidateBadConnEvenWhenPoolIsFull) {
-        mongo::pool.setMaxPoolSize(2);
+        //mongo::pool.setMaxPoolSize(2);
 
         ScopedDbConnection conn1(TARGET_HOST);
         ScopedDbConnection conn2(TARGET_HOST);

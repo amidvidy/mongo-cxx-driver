@@ -652,10 +652,10 @@ namespace {
 
     DBClientBase* cloneFromPool(DBClientBase* originalConnection,
                                 std::vector<DBClientBase*>* connectionAccumulator) {
-        DBClientBase* conn = pool.get(originalConnection->getServerAddress(),
-            originalConnection->getSoTimeout());
-        connectionAccumulator->push_back(conn);
-        return conn;
+        //DBClientBase* conn = pool.get(originalConnection->getServerAddress(),
+        //originalConnection->getSoTimeout());
+        //connectionAccumulator->push_back(conn);
+        return originalConnection;
     }
 
     TEST_F(DBClientTest, ParallelCollectionScanUsingConnectionPool) {
@@ -1092,10 +1092,10 @@ namespace {
     TEST_F(DBClientTest, FlushBadConnections) {
         string host_str = string("localhost:") + integrationTestParams.port;
 
-        pool.removeHost(host_str);
+        //pool.removeHost(host_str);
 
         ConnHook* dh = new ConnHook();
-        pool.addHook(dh);
+        //pool.addHook(dh);
 
         {
             ScopedDbConnection conn1(host_str);
@@ -1109,7 +1109,7 @@ namespace {
             setMode(FailPoint::nTimes, 1);
 
         // call isMaster on all the connections, remove the bad ones
-        pool.flush();
+        //pool.flush();
 
         {
             ScopedDbConnection conn1(host_str);
@@ -1126,16 +1126,16 @@ namespace {
         ScopedDbConnection conn(host_str);
         ASSERT_TRUE(conn.ok());
         ASSERT_EQUALS(conn.getHost(), host_str);
-        DBClientBase* pconn = conn.get();
-        ASSERT_TRUE(pool.isConnectionGood(host_str, pconn));
+        //DBClientBase* pconn = conn.get();
+        //ASSERT_TRUE(pool.isConnectionGood(host_str, pconn));
         conn.done();
     }
 
     TEST_F(DBClientTest, AppendInfo) {
-        pool.clear();
+        //pool.clear();
 
         BSONObjBuilder b;
-        pool.appendInfo(b);
+        //pool.appendInfo(b);
         BSONObj info = b.done();
         BSONObj hosts = info["hosts"].Obj();
         ASSERT_EQUALS(hosts["localhost:27999::0"]["available"].Int(), 0);
@@ -1147,7 +1147,7 @@ namespace {
         }
 
         BSONObjBuilder b2;
-        pool.appendInfo(b2);
+        //pool.appendInfo(b2);
         BSONObj info2 = b2.done();
         hosts = info2["hosts"].Obj();
         ASSERT_EQUALS(hosts["localhost:27999::0"]["available"].Int(), 1);
@@ -1157,8 +1157,8 @@ namespace {
         string host_str = string("localhost:") + integrationTestParams.port;
 
         ConnHook* dh = new ConnHook();
-        pool.clear();
-        pool.addHook(dh);
+        //pool.clear();
+        //pool.addHook(dh);
 
         {
             ScopedDbConnection conn1(host_str);
@@ -1172,9 +1172,9 @@ namespace {
             setMode(FailPoint::nTimes, 1);
 
         // runs getStaleConnections and deletes them
-        pool.taskDoWork();
+        //pool.taskDoWork();
 
-        ASSERT_EQUALS(pool.taskName(), "DBConnectionPool-cleaner");
+        //ASSERT_EQUALS(pool.taskName(), "DBConnectionPool-cleaner");
 
         {
             ScopedDbConnection conn1(host_str);

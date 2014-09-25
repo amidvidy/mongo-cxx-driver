@@ -255,7 +255,7 @@ namespace mongo {
 
     };
 
-    extern MONGO_CLIENT_API DBConnectionPool pool;
+    //extern MONGO_CLIENT_API DBConnectionPool pool;
 
     class MONGO_CLIENT_API AScopedConnection : boost::noncopyable {
     public:
@@ -289,11 +289,11 @@ namespace mongo {
         /** the main constructor you want to use
             throws UserException if can't connect
             */
-        explicit ScopedDbConnection(const std::string& host, double socketTimeout = 0) : _host(host), _conn( pool.get(host, socketTimeout) ), _socketTimeout( socketTimeout ) {
+        explicit ScopedDbConnection(const std::string& host, double socketTimeout = 0) : _host(host), _conn( /*pool.get(host, socketTimeout)*/ ), _socketTimeout( socketTimeout ) {
             _setSocketTimeout();
         }
 
-        explicit ScopedDbConnection(const ConnectionString& host, double socketTimeout = 0) : _host(host.toString()), _conn( pool.get(host, socketTimeout) ), _socketTimeout( socketTimeout ) {
+        explicit ScopedDbConnection(const ConnectionString& host, double socketTimeout = 0) : _host(host.toString()), _conn(/* pool.get(host, socketTimeout)*/ ), _socketTimeout( socketTimeout ) {
             _setSocketTimeout();
         }
 
@@ -353,7 +353,7 @@ namespace mongo {
                 kill();
             else
             */
-            pool.release(_host, _conn);
+            /*pool.release(_host, _conn);*/
             _conn = 0;
         }
 
