@@ -719,9 +719,6 @@ namespace {
         // Needs to perform a dynamic_cast because we need to set the replSet
         // callback. We should eventually not need this after we remove the
         // callback.
-        //DBClientConnection* newConn = dynamic_cast<DBClientConnection*>(
-        //pool.get(_lastSlaveOkHost.toString(), _so_timeout));
-
         std::string errmsg;
         // Need to use ConnectionString so that the MockDBClientConnection can be
         // hooked in in the tests....
