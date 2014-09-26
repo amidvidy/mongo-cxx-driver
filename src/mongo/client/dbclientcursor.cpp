@@ -188,25 +188,10 @@ namespace mongo {
         toSend.setData(dbGetMore, b.buf(), b.len());
         auto_ptr<Message> response(new Message());
 
-        if ( _client ) {
-            _client->call( toSend, *response );
-            this->batch.m = response;
-            dataReceived();
-        }
-
-        // TODO: figure out reconnect behavior
-
-        /*
-        else {
-            verify( _scopedHost.size() );
-            ScopedDbConnection conn(_scopedHost);
-            conn->call( toSend , *response );
-            _client = conn.get();
-            this->batch.m = response;
-            dataReceived();
-            _client = 0;
-            conn.done();
-            }*/
+        verify(_client);
+        _client->call( toSend, *response );
+        this->batch.m = response;
+        dataReceived();
     }
 
     /** with QueryOption_Exhaust, the server just blasts data at us (marked at end with cursorid==0). */
@@ -384,35 +369,12 @@ namespace mongo {
             Message m;
             m.setData( dbKillCursors , b.buf() , b.len() );
 
-            if ( _client ) {
-
-                // Kill the cursor the same way the connection itself would.  Usually, non-lazily
-                if( DBClientConnection::getLazyKillCursor() )
-                    _client->sayPiggyBack( m );
-                else
-                    _client->say( m );
-
-            }
-            // TODO: it doesn't make sense to reconnect in the destructor to kill the cursor
-            // unless the user explicitly requests this behavior.
-            /*
-            else {
-                verify( _scopedHost.size() );
-
-                try {
-                // TODO: can the _scopedHost actually be invalid here?
-                    std::string errmsg;
-                    ConnectionString cs = ConnectionString::parse(_scopedHost, errmsg);
-                    boost::scoped_ptr<DBClientBase>(conn.connect(errmsg)); // TODO timeout?
-
-                    if( DBClientConnection::getLazyKillCursor() )
-                        conn->sayPiggyBack( m );
-                    else
-                        conn->say( m );
-
-                    conn.done();
-                }
-                }*/
+            invariant( _client );
+            // Kill the cursor the same way the connection itself would.  Usually, non-lazily
+            if( DBClientConnection::getLazyKillCursor() )
+                _client->sayPiggyBack( m );
+            else
+                _client->say( m );
         }
 
         );
