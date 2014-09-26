@@ -48,7 +48,7 @@ int main( int argc, const char **argv ) {
 
     DBClientConnection conn;
     std::string errmsg;
-    if ( !conn.connect( string( " 127.0.0.1:" ) + port, errmsg) ) {
+    if ( !conn.connect( string( "127.0.0.1:" ) + port, errmsg) ) {
         cout << "couldn't connect : " << errmsg << endl;
         return EXIT_FAILURE;
     }
