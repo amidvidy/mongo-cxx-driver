@@ -1029,18 +1029,6 @@ namespace {
         ASSERT_FALSE(result.isEmpty());
     }
 
-    // TODO: rewrite to use normal DBClientConnection
-    /*
-    TEST_F(DBClientTest, IsConnectionGood) {
-        string host_str = string("localhost:") + integrationTestParams.port;
-        ScopedDbConnection conn(host_str);
-        ASSERT_TRUE(conn.ok());
-        ASSERT_EQUALS(conn.getHost(), host_str);
-        //DBClientBase* pconn = conn.get();
-        //ASSERT_TRUE(pool.isConnectionGood(host_str, pconn));
-        conn.done();
-     }*/
-
     TEST_F(DBClientTest, LazyCursor) {
         c.insert(TEST_NS, BSON("test" << true));
 
