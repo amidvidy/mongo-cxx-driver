@@ -27,7 +27,6 @@
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "mongo/client/connpool.h"
 #include "mongo/client/options.h"
 #include "mongo/client/private/options.h"
 #include "mongo/client/replica_set_monitor_internal.h"
@@ -754,12 +753,14 @@ namespace {
                 DEV _set->checkInvariants();
                 lk.unlock(); // relocked after attempting to call isMaster
                 try {
-                    ScopedDbConnection conn(ConnectionString(ns.host), socketTimeoutSecs);
+                    boost::scoped_ptr<DBClientConnection> conn(new DBClientConnection);
+                    conn->setSoTimeout(socketTimeoutSecs);
+                    std::string errmsg; // TODO: handle non-null
+                    conn->connect(ns.host, errmsg);
                     bool ignoredOutParam = false;
                     Timer timer;
                     conn->isMaster(ignoredOutParam, &reply);
                     pingMicros = timer.micros();
-                    conn.done(); // return to pool on success.
                 }
                 catch (...) {
                     reply = BSONObj(); // should be a no-op but want to be sure

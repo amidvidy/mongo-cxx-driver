@@ -354,7 +354,6 @@ namespace mongo {
     };
 
     class BSONObj;
-    class ScopedDbConnection;
     class DBClientCursor;
     class DBClientCursorBatchIterator;
 
@@ -1170,7 +1169,7 @@ namespace mongo {
          * to a BSONObjBuilder and returns nothing.  The builder contains a
          * runCommand BSON object.
          * Once such a function is set as the runCommand hook, every time the DBClient
-         * processes a runCommand, the hook will be called just prior to sending it to the server. 
+         * processes a runCommand, the hook will be called just prior to sending it to the server.
          */
         typedef stdx::function<void(BSONObjBuilder*)> RunCommandHookFunc;
         virtual void setRunCommandHook(RunCommandHookFunc func);
@@ -1178,7 +1177,7 @@ namespace mongo {
             return _runCommandHook;
         }
 
-        /** 
+        /**
          * Similar to above, but for running a function on a command response after a command
          * has been run.
          */

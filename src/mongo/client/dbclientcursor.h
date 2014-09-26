@@ -27,7 +27,6 @@
 
 namespace mongo {
 
-    class AScopedConnection;
     class DBClientCursorShim;
     class DBClientCursorShimCursorID;
     class DBClientCursorShimArray;
@@ -139,8 +138,6 @@ namespace mongo {
         */
         void decouple() { _ownCursor = false; }
 
-        void attach( AScopedConnection * conn );
-
         std::string originalHost() const { return _originalHost; }
 
         std::string getns() const { return ns; }
@@ -242,4 +239,3 @@ namespace mongo {
     };
 
 } // namespace mongo
-

@@ -21,7 +21,6 @@
 
 #include "mongo/client/dbclientcursor.h"
 
-#include "mongo/client/connpool.h"
 #include "mongo/db/dbmessage.h"
 #include "mongo/db/namespace_string.h"
 #include "mongo/util/debug_util.h"
@@ -119,7 +118,7 @@ namespace mongo {
         dataReceived();
         return true;
     }
-    
+
     void DBClientCursor::initLazy( bool isRetry ) {
         massert( 15875 , "DBClientCursor::initLazy called on a client that doesn't support lazy" , _client->lazySupported() );
         if (DBClientWithCommands::RunCommandHookFunc hook = _client->getRunCommandHook()) {
@@ -130,7 +129,7 @@ namespace mongo {
                 query = bob.obj();
             }
         }
-        
+
         Message toSend;
         _assembleInit( toSend );
         _client->say( toSend, isRetry, &_originalHost );
@@ -194,6 +193,10 @@ namespace mongo {
             this->batch.m = response;
             dataReceived();
         }
+
+        // TODO: figure out reconnect behavior
+
+        /*
         else {
             verify( _scopedHost.size() );
             ScopedDbConnection conn(_scopedHost);
@@ -203,7 +206,7 @@ namespace mongo {
             dataReceived();
             _client = 0;
             conn.done();
-        }
+            }*/
     }
 
     /** with QueryOption_Exhaust, the server just blasts data at us (marked at end with cursorid==0). */
@@ -344,7 +347,7 @@ namespace mongo {
             v.push_back(o);
         }
     }
-    
+
     BSONObj DBClientCursor::peekFirst(){
         vector<BSONObj> v;
         peek( v, 1 );
@@ -366,28 +369,6 @@ namespace mongo {
         return true;
     }
 
-    void DBClientCursor::attach( AScopedConnection * conn ) {
-        verify( _scopedHost.size() == 0 );
-        verify( conn );
-        verify( conn->get() );
-
-        if ( conn->get()->type() == ConnectionString::SET ) {
-            if( _lazyHost.size() > 0 )
-                _scopedHost = _lazyHost;
-            else if( _client )
-                _scopedHost = _client->getServerAddress();
-            else
-                massert(14821, "No client or lazy client specified, cannot store multi-host connection.", false);
-        }
-        else {
-            _scopedHost = conn->getHost();
-        }
-
-        conn->done();
-        _client = 0;
-        _lazyHost = "";
-    }
-
     DBClientCursor::~DBClientCursor() {
         if (!this)
             return;
@@ -399,7 +380,7 @@ namespace mongo {
             b.appendNum( (int)0 ); // reserved
             b.appendNum( (int)1 ); // number
             b.appendNum( cursorId );
-            
+
             Message m;
             m.setData( dbKillCursors , b.buf() , b.len() );
 
@@ -412,17 +393,26 @@ namespace mongo {
                     _client->say( m );
 
             }
+            // TODO: it doesn't make sense to reconnect in the destructor to kill the cursor
+            // unless the user explicitly requests this behavior.
+            /*
             else {
                 verify( _scopedHost.size() );
-                ScopedDbConnection conn(_scopedHost);
 
-                if( DBClientConnection::getLazyKillCursor() )
-                    conn->sayPiggyBack( m );
-                else
-                    conn->say( m );
+                try {
+                // TODO: can the _scopedHost actually be invalid here?
+                    std::string errmsg;
+                    ConnectionString cs = ConnectionString::parse(_scopedHost, errmsg);
+                    boost::scoped_ptr<DBClientBase>(conn.connect(errmsg)); // TODO timeout?
 
-                conn.done();
-            }
+                    if( DBClientConnection::getLazyKillCursor() )
+                        conn->sayPiggyBack( m );
+                    else
+                        conn->say( m );
+
+                    conn.done();
+                }
+                }*/
         }
 
         );

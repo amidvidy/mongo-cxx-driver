@@ -22,7 +22,6 @@
 #include <memory>
 
 #include "mongo/bson/util/builder.h"
-#include "mongo/client/connpool.h"
 #include "mongo/client/dbclientcursor.h"
 #include "mongo/client/replica_set_monitor.h"
 #include "mongo/client/sasl_client_authenticate.h"
