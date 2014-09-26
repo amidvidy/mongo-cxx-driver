@@ -696,8 +696,7 @@ namespace {
             return NULL;
         }
 
-        // We are now about to get a new connection from the pool, so cleanup
-        // the current one and release it back to the pool.
+        // cleanup the last connection we used.
         resetSlaveOkConn();
 
         _lastReadPref = readPref;
@@ -724,19 +723,16 @@ namespace {
         //pool.get(_lastSlaveOkHost.toString(), _so_timeout));
 
         std::string errmsg;
-
-        // TODO(amidvidy): we are leaking connections probably
-
         // Need to use ConnectionString so that the MockDBClientConnection can be
         // hooked in in the tests....
         DBClientConnection* newConn = dynamic_cast<DBClientConnection*>
             (ConnectionString(_lastSlaveOkHost).connect(errmsg, _so_timeout));
 
-        uassert(0, "Unable to construct DBClientConnection", newConn);
+        uassert(17889, "Unable to construct DBClientConnection", newConn);
 
         bool connected = newConn->connect(_lastSlaveOkHost, errmsg);
 
-        uassert(0,
+        uassert(17890,
                 str::stream() << "Failed to connect to " << _lastSlaveOkHost.toString()
                               << ": " << errmsg,
                 connected);
@@ -1058,9 +1054,7 @@ namespace {
                 // so no need to logout.
             }
 
-            // If the connection was bad, the pool will clean it up.
             _lastSlaveOkConn.reset();
-            //pool.release(_lastSlaveOkHost.toString(), _lastSlaveOkConn.release());
         }
 
         _lastSlaveOkHost = HostAndPort();
