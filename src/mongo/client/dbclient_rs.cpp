@@ -724,14 +724,22 @@ namespace {
         //pool.get(_lastSlaveOkHost.toString(), _so_timeout));
 
         std::string errmsg;
-        DBClientConnection* newConn = dynamic_cast<DBClientConnection*>(ConnectionString(_lastSlaveOkHost).connect(errmsg));
 
-        // Assert here instead of returning NULL since the contract of this method is such
-        // that returning NULL means none of the nodes were good, which is not the case here.
-        uassert(16532,
+        // TODO(amidvidy): we are leaking connections probably
+
+        // Need to use ConnectionString so that the MockDBClientConnection can be
+        // hooked in in the tests....
+        DBClientConnection* newConn = dynamic_cast<DBClientConnection*>
+            (ConnectionString(_lastSlaveOkHost).connect(errmsg, _so_timeout));
+
+        uassert(0, "Unable to construct DBClientConnection", newConn);
+
+        bool connected = newConn->connect(_lastSlaveOkHost, errmsg);
+
+        uassert(0,
                 str::stream() << "Failed to connect to " << _lastSlaveOkHost.toString()
                               << ": " << errmsg,
-                newConn != NULL);
+                connected);
 
         _lastSlaveOkConn.reset(newConn);
         _lastSlaveOkConn->setReplSetClientCallback(this);

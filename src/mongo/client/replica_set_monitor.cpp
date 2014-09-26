@@ -411,11 +411,6 @@ namespace {
         if ( clearSeedCache ) {
             seedServers.erase( name );
         }
-
-        // Kill all pooled ReplicaSetConnections for this set. They will not function correctly
-        // after we kill the ReplicaSetMonitor.
-        // TODO we may only need to do this if clearSeedCache is true.
-        //pool.removeHost(name);
     }
 
     void ReplicaSetMonitor::setConfigChangeHook(ConfigChangeHook hook) {
@@ -752,19 +747,28 @@ namespace {
 
                 DEV _set->checkInvariants();
                 lk.unlock(); // relocked after attempting to call isMaster
-                try {
-                    boost::scoped_ptr<DBClientConnection> conn(new DBClientConnection);
-                    conn->setSoTimeout(socketTimeoutSecs);
-                    std::string errmsg; // TODO: handle non-null
-                    conn->connect(ns.host, errmsg);
-                    bool ignoredOutParam = false;
-                    Timer timer;
-                    conn->isMaster(ignoredOutParam, &reply);
-                    pingMicros = timer.micros();
+
+                // TODO: use GuardedDBConnection once it is implemented
+                std::string errmsg; // TODO: handle non-null
+                boost::scoped_ptr<DBClientConnection> conn(dynamic_cast<DBClientConnection*>
+                    (ConnectionString(ns.host).connect(errmsg, socketTimeoutSecs)));
+                if (conn) {
+                    try {
+                        bool ignoredOutParam = false;
+                        Timer timer;
+                        conn->isMaster(ignoredOutParam, &reply);
+                        pingMicros = timer.micros();
+                    } catch (...) {
+                        std::cout << "failed isMaster" << std::endl;
+                        LOG(2) << "failed to execute isMaster on host: " << ns.host;
+                        reply = BSONObj();
+                    }
                 }
-                catch (...) {
-                    reply = BSONObj(); // should be a no-op but want to be sure
+                else {
+                    LOG(2) << "failed to connect to host: " << ns.host;
+                    reply = BSONObj();
                 }
+
                 lk.lock();
 
                 // Ignore the reply and return if we are no longer the current scan. This might
