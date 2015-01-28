@@ -18,8 +18,43 @@
 #include "mongo/integration/integration_test.h"
 
 #include <memory>
+#include <cstdlib>
+#include <cstdio>
 
 #include "mongo/client/dbclient.h"
+
+#ifdef _WIN32
+#include "Windows.h"
+
+namespace {
+    void printStack( void )
+    {
+        unsigned int   i;
+        void         * stack[ 100 ];
+        unsigned short frames;
+        SYMBOL_INFO  * symbol;
+        HANDLE         process;
+
+        process = GetCurrentProcess();
+        SymInitialize( process, NULL, TRUE );
+        frames               = CaptureStackBackTrace( 0, 100, stack, NULL );
+        symbol               = ( SYMBOL_INFO * )calloc( sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
+        symbol->MaxNameLen   = 255;
+        symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
+
+        for( i = 0; i < frames; i++ )
+            {
+                SymFromAddr( process, ( DWORD64 )( stack[ i ] ), 0, symbol );
+
+                std::printf( "%i: %s - 0x%0X\n", frames - i - 1, symbol->Name, symbol->Address );
+            }
+
+        std::free( symbol );
+    }
+}
+
+
+#endif
 
 namespace {
 
@@ -157,33 +192,47 @@ namespace {
     }
 
     TEST_F(ReadPreferenceTest, RoutingPrimaryDown) {
-        mongo::orchestration::Server primary = rs().primary();
-        primary.stop();
+        try {
+            mongo::orchestration::Server primary = rs().primary();
+            primary.stop();
 
-        while (true) {
-            try {
-                replset_conn->findOne(TEST_NS, Query().readPref(ReadPreference_SecondaryOnly, BSONArray()));
-                break;
-            } catch (DBException& ex) {
-                std::cout << ex.what() <<std::endl;
-                mongo::sleepsecs(1);
+            while (true) {
+                try {
+                    replset_conn->findOne(TEST_NS, Query().readPref(ReadPreference_SecondaryOnly, BSONArray()));
+                    break;
+                } catch (DBException& ex) {
+                    std::cout << ex.what() <<std::endl;
+                    mongo::sleepsecs(1);
+                }
             }
-        }
 
-        assert_route(replset_conn, secondary_conn, query, ReadPreference_PrimaryPreferred, "query");
-        assert_route(replset_conn, secondary_conn, query, ReadPreference_SecondaryOnly, "query");
-        assert_route(replset_conn, secondary_conn, query, ReadPreference_SecondaryPreferred, "query");
+            assert_route(replset_conn, secondary_conn, query, ReadPreference_PrimaryPreferred, "query");
+            assert_route(replset_conn, secondary_conn, query, ReadPreference_SecondaryOnly, "query");
+            assert_route(replset_conn, secondary_conn, query, ReadPreference_SecondaryPreferred, "query");
 
-        primary.start();
+            primary.start();
 
-        while (true) {
-            try {
-                WriteConcern wcAll = WriteConcern().nodes(2);
-                replset_conn->insert(TEST_NS, BSON("x" << 2), 0, &wcAll);
-                break;
-            } catch (const DBException&) {
-                mongo::sleepsecs(1);
+            while (true) {
+                try {
+                    WriteConcern wcAll = WriteConcern().nodes(2);
+                    replset_conn->insert(TEST_NS, BSON("x" << 2), 0, &wcAll);
+                    break;
+                } catch (const DBException&) {
+                    mongo::sleepsecs(1);
+                }
             }
+        } catch (const DBException& ex) {
+            std::cout << "caught dbexception: " << ex.what() << std::endl;
+            printStack();
+            throw;
+        } catch (const std::exception& ex) {
+            std::cout << "caught std::exception: " << ex.what() << std::endl;
+            printStack();
+            throw;
+        } catch (...) {
+            std::cout << "caught unknown exception: " << std::endl;
+            printStack();
+            throw;
         }
     }
 
