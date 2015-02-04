@@ -22,6 +22,7 @@ endif()
 set(CMAKE_MACOSX_RPATH 1)
 
 option(BUILD_UNIT_TESTS "Build unit tests")
+option(BUILD_EXAMPLES "Build examples")
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default is Release")
@@ -38,5 +39,7 @@ endif()
 
 add_subdirectory(src)
 
-
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
