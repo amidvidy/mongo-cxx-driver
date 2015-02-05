@@ -2,15 +2,17 @@
 #include <bsoncxx/types.hpp>
 #include <mongocxx/client.hpp>
 
-using namespace mongocxx;
-using namespace bsoncxx;
+using bsoncxx::builder::helpers::open_array;
+using bsoncxx::builder::helpers::close_array;
+using bsoncxx::builder::helpers::open_doc;
+using bsoncxx::builder::helpers::close_doc;
 
 int main(int argc, char** argv) {
-    client conn{};
+    mongocxx::client conn{};
     
     auto db = conn["test"];
         
-    auto restaurant_doc = builder::document{};
+    auto restaurant_doc = bsoncxx::builder::document{};
     restaurant_doc  
         << "address" << open_doc
           << "street"   << "2 Avenue"
@@ -24,12 +26,12 @@ int main(int argc, char** argv) {
         << "cuisine"  << "Italian"
         << "grades"   << open_array 
           << open_doc 
-            << "date" << date{12323}
+            << "date" << bsoncxx::types::b_date{12323}
             << "grade" << "A"
             << "score" << 11
           << close_doc
           << open_doc
-            << "date" << date{121212}
+            << "date" << bsoncxx::types::b_date{121212}
             << "grade" << "B"
             << "score"   << 17
           << close_doc
