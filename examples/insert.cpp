@@ -1,18 +1,16 @@
-#include <mongo/bson/builder.hpp>
-#include <mongo/bson/types.hpp>
-#include <mongo/driver/base/client.hpp>
+#include <bsoncxx/builder.hpp>
+#include <bsoncxx/types.hpp>
+#include <mongocxx/client.hpp>
 
-using mongo::driver::base::client;
-using mongo::bson::builder::document;
-using namespace mongo::bson::builder::helpers;
-using date = mongo::bson::types::b_date;
+using namespace mongocxx;
+using namespace bsoncxx;
 
 int main(int argc, char** argv) {
     client conn{};
     
     auto db = conn["test"];
         
-    auto restaurant_doc = document{};
+    auto restaurant_doc = builder::document{};
     restaurant_doc  
         << "address" << open_doc
           << "street"   << "2 Avenue"
