@@ -1069,6 +1069,7 @@ namespace mongo {
            dbname    database SavedContext in which the code runs. The javascript variable 'db' will be assigned
                      to this database when the function is invoked.
            jscode    source code for a javascript function.
+           nolock    if true, the server will not take a global write lock when executing the jscode.
            info      the command object which contains any information on the invocation result including
                       the return value and other information.  If an error occurs running the jscode, error
                      information will be in info.  (try "log() << info.toString()")
@@ -1080,7 +1081,7 @@ namespace mongo {
 
            See testDbEval() in dbclient.cpp for an example of usage.
         */
-        bool eval(const std::string &dbname, const std::string &jscode, BSONObj& info, BSONElement& retValue, BSONObj *args = 0);
+        bool eval(const std::string &dbname, const std::string &jscode, bool nolock, BSONObj& info, BSONElement& retValue, BSONObj *args = 0);
 
         /** validate a collection, checking for errors and reporting back statistics.
             this operation is slow and blocking.
@@ -1102,7 +1103,7 @@ namespace mongo {
             BSONObjBuilder b;
             b.append("0", parm1);
             BSONObj args = b.done();
-            return eval(dbname, jscode, info, retValue, &args);
+            return eval(dbname, jscode, /*nolock*/ false, info, retValue, &args);
         }
 
         /** eval invocation with one parm to server and one numeric field (either int or double) returned */
@@ -1113,7 +1114,7 @@ namespace mongo {
             BSONObjBuilder b;
             b.append("0", parm1);
             BSONObj args = b.done();
-            if ( !eval(dbname, jscode, info, retValue, &args) )
+            if ( !eval(dbname, jscode, /*nolock*/ false, info, retValue, &args) )
                 return false;
             ret = (NumType) retValue.number();
             return true;
