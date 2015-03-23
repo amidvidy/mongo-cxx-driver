@@ -34,10 +34,14 @@ namespace orchestration {
     }
 
     RestClient::response MongoResource::action(const std::string& action) {
-        Json::Value doc;
-        Json::FastWriter writer;
-        doc["action"] = action;
-        return post("", writer.write(doc));
+        try {
+            Json::Value doc;
+            Json::FastWriter writer;
+            doc["action"] = action;
+            return post("", writer.write(doc));
+        } catch (const std::exception ex) {
+            throw DBException(std::string("Got exception from Mongo Orchestration: ") + ex.what());
+        }
     }
 
     std::string MongoResource::uri() const {
