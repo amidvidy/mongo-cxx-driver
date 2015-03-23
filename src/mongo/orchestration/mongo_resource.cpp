@@ -15,6 +15,7 @@
  */
 
 #include "mongo/orchestration/mongo_resource.h"
+#include "mongo/util/assert_util.h"
 
 #include <stdexcept>
 
