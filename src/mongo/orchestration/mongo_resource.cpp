@@ -41,7 +41,8 @@ namespace orchestration {
             doc["action"] = action;
             return post("", writer.write(doc));
         } catch (const std::exception ex) {
-            throw DBException((std::string("Got exception from Mongo Orchestration: ") + ex.what()));
+            std::string s = std::string("Got exception from Mongo Orchestration : ") + ex.what();
+            throw DBException(s);
         }
     }
 
