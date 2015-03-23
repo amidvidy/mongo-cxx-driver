@@ -77,12 +77,62 @@ namespace mongo {
     MONGO_CLIENT_API std::string MONGO_CLIENT_FUNC causedBy( const DBException& e );
     MONGO_CLIENT_API std::string MONGO_CLIENT_FUNC causedBy( const std::string& e );
 
+#ifdef _WIN32
+#include "Windows.h"
+#include "DbgHelp.h"
+#include <cstdlib>
+#include <cstdio>
+
+    namespace {
+        void printStack( void )
+        {
+            unsigned int   i;
+            void         * stack[ 100 ];
+            unsigned short frames;
+            SYMBOL_INFO  * symbol;
+            HANDLE         process;
+
+            process = GetCurrentProcess();
+            SymInitialize( process, NULL, TRUE );
+            frames               = CaptureStackBackTrace( 0, 100, stack, NULL );
+            symbol               = ( SYMBOL_INFO * )calloc( sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
+            symbol->MaxNameLen   = 255;
+            symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
+
+            for( i = 0; i < frames; i++ )
+                {
+                    SymFromAddr( process, ( DWORD64 )( stack[ i ] ), 0, symbol );
+
+                    std::printf( "%i: %s - 0x%0X\n", frames - i - 1, symbol->Name, symbol->Address );
+                }
+
+            std::free( symbol );
+        }
+    }
+
+#endif
+
     /** Most mongo exceptions inherit from this; this is commonly caught in most threads */
     class MONGO_CLIENT_API DBException : public std::exception {
     public:
-        DBException( const ExceptionInfo& ei ) : _ei(ei) {}
-        DBException( const char * msg , int code ) : _ei(msg,code) {}
-        DBException( const std::string& msg , int code ) : _ei(msg,code) {}
+        DBException( const ExceptionInfo& ei ) : _ei(ei) {
+            std::cout << "CONSTRUCTING DB EXCEPTION!!! YOU DUN GOOFED" << std::endl;
+            std::cout << "======= HAVE A STACKTRACE MY FRIEND ===========================" << std::endl;
+            printStack();
+            std::cout << "======= HOPE THAT HELPED ========================================" << std::endl;
+        }
+        DBException( const char * msg , int code ) : _ei(msg,code) {
+            std::cout << "CONSTRUCTING DB EXCEPTION!!! YOU DUN GOOFED" << std::endl;
+            std::cout << "======= HAVE A STACKTRACE MY FRIEND ===========================" << std::endl;
+            printStack();
+            std::cout << "======= HOPE THAT HELPED ========================================" << std::endl;
+        }
+        DBException( const std::string& msg , int code ) : _ei(msg,code) {
+            std::cout << "CONSTRUCTING DB EXCEPTION!!! YOU DUN GOOFED" << std::endl;
+            std::cout << "======= HAVE A STACKTRACE MY FRIEND ===========================" << std::endl;
+            printStack();
+            std::cout << "======= HOPE THAT HELPED ========================================" << std::endl;
+        }
         virtual ~DBException() throw() { }
 
         virtual const char* what() const throw() { return _ei.msg.c_str(); }
