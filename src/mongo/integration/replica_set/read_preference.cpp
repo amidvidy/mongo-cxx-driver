@@ -188,8 +188,11 @@ namespace {
     }
 
     TEST_F(ReadPreferenceTest, QueryPrimaryOnly) {
+        std::cout << "BAR" << std::endl;
         Query q = Query().readPref(ReadPreference_PrimaryOnly, BSONArray());
+        std::cout << "BAZ" << std::endl;
         auto_ptr<DBClientCursor> cursor_ptr = replset_conn->query(TEST_NS, q);
+        std::cout << "GARPLY" << std::endl;
         ASSERT_TRUE(cursor_ptr->originalHost() == replset_conn->masterConn().getServerAddress());
     }
 
