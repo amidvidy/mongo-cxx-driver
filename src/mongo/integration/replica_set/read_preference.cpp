@@ -45,10 +45,11 @@ namespace {
             replset_conn->dropCollection(TEST_NS);
 
             primary_conn.reset(new DBClientConnection());
-            primary_conn->connect(rs().primary().uri());
-
+            primary_conn->connect(rs().primary().uri(), errmsg);
+            std::cout << "ERRMSG: " << errmsg << std::endl;
             secondary_conn.reset(new DBClientConnection());
-            secondary_conn->connect(rs().secondaries().front().uri());
+            secondary_conn->connect(rs().secondaries().front().uri(), errmsg);
+            std::cout << "ERRMSG: " << errmsg << std::endl;
         }
 
         static auto_ptr<DBClientReplicaSet> replset_conn;
