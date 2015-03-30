@@ -39,10 +39,9 @@ namespace {
             std::string errmsg;
 
             ConnectionString cs = ConnectionString::parse(rs().mongodbUri(), errmsg);
+            std::cout << "ERRMSG: " << errmsg << std::endl;
             replset_conn.reset(static_cast<DBClientReplicaSet*>(cs.connect(errmsg)));
-            if (!replset_conn.get()) {
-                std::cout << errmsg << std::endl;
-            }
+            std::cout << "ERRMSG: " << errmsg << std::endl;
             replset_conn->dropCollection(TEST_NS);
 
             primary_conn.reset(new DBClientConnection());
