@@ -18,6 +18,7 @@
 #include "mongo/integration/integration_test.h"
 
 #include <memory>
+#include <iostream>
 
 #include "mongo/client/dbclient.h"
 
@@ -39,6 +40,9 @@ namespace {
 
             ConnectionString cs = ConnectionString::parse(rs().mongodbUri(), errmsg);
             replset_conn.reset(static_cast<DBClientReplicaSet*>(cs.connect(errmsg)));
+            if (!replset_conn) {
+                std::cout << errmsg << std::endl;
+            }
             replset_conn->dropCollection(TEST_NS);
 
             primary_conn.reset(new DBClientConnection());
