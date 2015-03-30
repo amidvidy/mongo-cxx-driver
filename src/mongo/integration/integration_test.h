@@ -79,6 +79,7 @@ namespace integration {
         static void SetUpTestCase() {
             mongo::orchestration::Document params;
             params["preset"] = Environment::getPreset();
+            params["timeout"] = 300; // see CXX-551
             _id = Environment::orchestration()->createMongod(params);
         }
 
