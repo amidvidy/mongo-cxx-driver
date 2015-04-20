@@ -18,11 +18,21 @@
 
 #include <exception>
 
+#include <bsoncxx/document/value.hpp>
+#include <bsoncxx/document/view.hpp>
+
 namespace mongocxx {
 MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace exception {
 
-class MONGOCXX_API base : public std::exception {};
+class MONGOCXX_API base : public virtual std::exception {
+   public:
+    base(bsoncxx::document::value raw_server_error);
+
+    bsoncxx::document::view raw_server_error();
+   private:
+    bsoncxx::document::value _raw_server_error;
+};
 
 }  // namespace exception
 MONGOCXX_INLINE_NAMESPACE_END

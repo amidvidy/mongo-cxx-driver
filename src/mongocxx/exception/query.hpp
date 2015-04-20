@@ -22,7 +22,10 @@ namespace mongocxx {
 MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace exception {
 
-class MONGOCXX_API query : public operation {};
+class MONGOCXX_API query : public operation {
+   public:
+    query(bsoncxx::document::value raw_server_error);
+};
 
 }  // namespace exception
 MONGOCXX_INLINE_NAMESPACE_END

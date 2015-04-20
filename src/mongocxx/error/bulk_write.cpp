@@ -1,4 +1,4 @@
-// Copyright 2014 MongoDB Inc.
+// Copyright 2015 MongoDB Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include <mongocxx/error/bulk_write.hpp>
 
-#include <mongocxx/config/prelude.hpp>
-
-#include <mongocxx/exception/operation.hpp>
+#include <utility>
 
 namespace mongocxx {
 MONGOCXX_INLINE_NAMESPACE_BEGIN
-namespace exception {
+namespace error {
 
-class MONGOCXX_API authentication : public base {
-   public:
-    authentication(bsoncxx::document::value raw_server_error);
-};
+bulk_write::bulk_write(std::int32_t code,
+                       std::string message,
+                       std::size_t index,
+                       model::write write_model)
+    // ns qualify write to disambiguate
+    : error::write(std::move(code), std::move(message))
+    , _index{std::move(index)}
+    , _write{std::move(write_model)}
+{}
 
-}  // namespace exception
+std::size_t bulk_write::index() {
+    return _index;
+}
+
+const model::write& bulk_write::write() {
+    return _write;
+}
+
+}  // namespace error
 MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
-
-#include <mongocxx/config/postlude.hpp>

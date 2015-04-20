@@ -16,13 +16,27 @@
 
 #include <mongocxx/config/prelude.hpp>
 
+#include <bsoncxx/stdx/optional.hpp>
+
+#include <mongocxx/error/write.hpp>
+#include <mongocxx/error/write_concern.hpp>
 #include <mongocxx/exception/operation.hpp>
+#include <mongocxx/stdx.hpp>
 
 namespace mongocxx {
 MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace exception {
 
-class MONGOCXX_API write : public operation {};
+class MONGOCXX_API write : public operation {
+ public:
+    write(bsoncxx::document::value raw_server_error);
+
+    const stdx::optional<error::write>& write_error();
+    const stdx::optional<error::write_concern>& write_concern_error();
+ private:
+    stdx::optional<error::write> _write_error;
+    stdx::optional<error::write_concern> _write_concern_error;
+};
 
 }  // namespace exception
 MONGOCXX_INLINE_NAMESPACE_END

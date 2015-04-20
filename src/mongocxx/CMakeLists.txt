@@ -24,6 +24,15 @@ set(mongocxx_sources
     collection.cpp
     cursor.cpp
     database.cpp
+    error/bulk_write.cpp
+    error/write.cpp
+    error/write_concern.cpp
+    exception/authentication.cpp
+    exception/base.cpp
+    exception/bulk_write.cpp
+    exception/operation.cpp
+    exception/query.cpp
+    exception/write.cpp
     instance.cpp
     model/delete_many.cpp
     model/delete_one.cpp

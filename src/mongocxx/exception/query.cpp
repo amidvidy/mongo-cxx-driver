@@ -1,4 +1,4 @@
-// Copyright 2014 MongoDB Inc.
+// Copyright 2015 MongoDB Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include <mongocxx/exception/query.hpp>
 
-#include <mongocxx/config/prelude.hpp>
-
-#include <mongocxx/exception/operation.hpp>
+#include <utility>
 
 namespace mongocxx {
 MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace exception {
 
-class MONGOCXX_API authentication : public base {
-   public:
-    authentication(bsoncxx::document::value raw_server_error);
-};
+query::query(bsoncxx::document::value raw_server_error)
+    : operation(std::move(raw_server_error))
+{}
 
 }  // namespace exception
 MONGOCXX_INLINE_NAMESPACE_END
 }  // namespace mongocxx
-
-#include <mongocxx/config/postlude.hpp>

@@ -12,21 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License./**
 
+#pragma once
+
 #include <mongocxx/config/prelude.hpp>
+
+#include <bsoncxx/stdx/string_view.hpp>
+
+#include <mongocxx/stdx.hpp>
 
 #include <cstdint>
 #include <string>
-
-// TODO: figure out if we need this
 
 namespace mongocxx {
 MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace error {
 
 class write {
-    std::int32_t code;
-    std::string message;
-}
+   public:
+    write(std::int32_t code, std::string message);
+
+    std::int32_t code();
+    stdx::string_view message();
+
+   private:
+    std::int32_t _code;
+    std::string _message;
+};
 
 }  // namespace error
 MONGOCXX_INLINE_NAMESPACE_END

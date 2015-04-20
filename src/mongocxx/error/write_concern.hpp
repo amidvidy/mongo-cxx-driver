@@ -12,23 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License./**
 
+#pragma once
+
 #include <mongocxx/config/prelude.hpp>
 
 #include <cstdint>
 #include <string>
 
-// TODO: figure out if we need this
-// TODO: figure out if bson document should be view/value, etc.
+#include <bsoncxx/document/view.hpp>
+#include <bsoncxx/document/value.hpp>
+#include <bsoncxx/stdx/string_view.hpp>
+
+#include <mongocxx/stdx.hpp>
 
 namespace mongocxx {
 MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace error {
 
 class write_concern {
-  private:
-    std::int32_t code;
-    // bsoncxx::document::view details;
-    std::string message;
+   public:
+    write_concern(
+        std::int32_t code,
+        bsoncxx::document::value details,
+        std::string message
+    );
+
+    std::int32_t code();
+    bsoncxx::document::view details();
+    stdx::string_view message();
+
+   private:
+    std::int32_t _code;
+    bsoncxx::document::value _details;
+    std::string _message;
 };
 
 }  // namespace error

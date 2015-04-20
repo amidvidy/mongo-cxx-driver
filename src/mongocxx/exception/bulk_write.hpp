@@ -16,13 +16,36 @@
 
 #include <mongocxx/config/prelude.hpp>
 
+#include <vector>
+
+#include <mongocxx/error/bulk_write.hpp>
+#include <mongocxx/error/write_concern.hpp>
 #include <mongocxx/exception/write.hpp>
 
 namespace mongocxx {
 MONGOCXX_INLINE_NAMESPACE_BEGIN
 namespace exception {
 
-class MONGOCXX_API bulk_write : public write {};
+class MONGOCXX_API bulk_write : public operation {
+   public:
+    bulk_write(
+        bsoncxx::document::value raw_server_error,
+        std::vector<model::write> processed_requests,
+        std::vector<model::write> unprocessed_requests
+    );
+    
+    const std::vector<model::write>& processed_requests();
+    const std::vector<model::write>& unprocessed_requests();
+
+    const stdx::optional<error::write_concern>& write_concern_error();
+    const std::vector<error::bulk_write>& write_errors();
+
+   private:
+    std::vector<model::write> _processed_requests;
+    std::vector<model::write> _unprocessed_requests;
+    stdx::optional<error::write_concern> _write_concern_error{};
+    std::vector<error::bulk_write> _write_errors{};
+};
 
 }  // namespace exception
 MONGOCXX_INLINE_NAMESPACE_END
