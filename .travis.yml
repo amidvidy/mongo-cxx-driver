@@ -86,7 +86,7 @@ before_script:
 
     # Start Mongo Orchestration
     - mongod --version
-    - sudo mongo-orchestration start
+    - sudo mongo-orchestration start --socket-timeout-ms=60000
 
 script:
     # Test the driver
